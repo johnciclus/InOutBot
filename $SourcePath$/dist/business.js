@@ -15,14 +15,5 @@ module.exports = function (Business) {
         }
         cb(null, response);
     };
-    Business.remoteMethod('status', {
-        http: {
-            path: '/status',
-            verb: 'get'
-        },
-        returns: {
-            arg: 'status',
-            type: 'string'
-        }
-    });
 };
+//# sourceMappingURL=business.js.map
