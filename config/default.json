@@ -1,0 +1,39 @@
+{
+    "FACEBOOK_APP_ID": "182633898821445",
+    "APP_SECRET": "4ea76f1b696647375440cf33708a37f9",
+    "VALIDATION_TOKEN": "3OWj6NfHYNv3BIiRAHhSJ3pKQFUJj5WhEFzmTbZsJLflWw8lp8Y37aIw4aSS",
+    "SERVER_URL": "https://bf651503.ngrok.io/",
+    "PARSE_APP_ID": "hSMaiK7EXqDqRVYyY2fjIp4lBweiZnjpEmhH4LpJ",
+    "PARSE_CLIENT_KEY": "V4VjUrR1M7gsOJlcJe2BdZjkPCsLZne2kYf2QNkA",
+    "PARSE_MASTER_KEY": "zyFraI2LrwTEG0oRPgNZsWQqv695jW706a7E3iNV",
+    "PARSE_SERVER_URL": "https://pro.parse.inoutdelivery.com/parse",
+    "REDIRECT_URI": "https://bf651503.ngrok.io/",
+    "GOOGLE_MAPS_URL": "https://maps.googleapis.com/maps/api/staticmap",
+    "GOOGLE_MAPS_KEY": "AIzaSyDe2X7qvYFpfEFb1V6ANA-7OhCeukb6lnI",
+    "FACEBOOK_GRAPH": "https://graph.facebook.com/v2.8/",
+
+    "PAGE_ACCESS_TOKEN": "EAACmGsSpx0UBAFaWVN3jCgbVtHUzIUCbw5jEwNvnI9GBa4LI8Pa4GtZAbxAjI9BgH8W17VZA6bUmgQe4roKFdBkggdWtnxnSYsQXJZAwHYHhCnpyLk0BZBQpJipf3eZC35M1eZBO1pUQtZA26aeBZBqTN3znUDy2fIZAwOhVDh5sryAZDZD",
+
+    "BUSINESS": {
+          "1242177029183121": {
+            "NAME": "InOut Bot Demo",
+            "BUSINESS_ID": "com.inoutdelivery.inoutdemo",
+            "PAGE_ACCESS_TOKEN": "EAAEZCXUHN8RkBABX0MqqYZCKhZCEVFcjVYvyDp7TEh5iwaZB2LWRbokY30qQo51dHcDkqb1wj81A21TgDZCt836giZCGM3ZAAAHbwYspZCedx0mjiOWQsICUcwxjjXw1JKKnNZBigwbFGp4G9cijbwRhfZCv1KLVyAKvVPFliN39ZBOEAZDZD"
+          },
+          "665070457004420": {
+              "NAME": "InOutBot",
+              "BUSINESS_ID": "com.inoutdelivery.inoutdemo",
+              "PAGE_ACCESS_TOKEN": "EAACmGsSpx0UBAAZBqXFpM2LM14SsgdTRqrIboGtFXQ02L2DCXv7RqWBvJ7H0ZA34ZAVop9qZC9SakW1xMA9IZBRK757NgcDRKuYdOOTO3QTy5vpVofuVX166TUNFaacGMwoTQs26wLg9WIhpP4FDVDZBGo7lHNpA6iozFpKt743wZDZD"
+          },
+          "1329140110447050": {
+              "NAME": "Speedy",
+              "BUSINESS_ID": "com.inoutdelivery.inoutdemo",
+              "PAGE_ACCESS_TOKEN": "EAACmGsSpx0UBAIaX0eybJj8DH0agf8TOwnQFBzH47yISZARF80E6z1sFzpQ5X0u3IcORDzY1ZC0ELA7uEfuORthFgXwPXqk2TQjbG5pcUSFRsGT3sLGRMLuOuxbSZB1RdGG4PcgZBqWQ0PRMg6XFvKWfSD5pTFQH93CwkE48WgZDZD"
+          },
+          "732072636895208": {
+              "NAME": "Oxxo Domicilios",
+              "BUSINESS_ID": "com.inoutdelivery.oxxo",
+              "PAGE_ACCESS_TOKEN": "EAAEZCXUHN8RkBAIZBUZBPnZBU57JQqEXQZAMmzGz2mJhpWvwDeGpI9VCJ2tZCaEnErc2rtMOk4giuwTY8LS0ZCR5l4DOGmYE7ZCb59Btut23pJ2ZAqS5C23w4QYDR8X3PZAjbbHHXWxPpTZCvXrZBGZAwbaX2bh3OPC6wgcymeZBg4z21SFgZDZD"
+          }
+      }
+}
