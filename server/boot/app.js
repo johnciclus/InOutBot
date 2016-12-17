@@ -1,24 +1,31 @@
 "use strict";
 var bot = require("../middleware/bot");
-var bodyParser = require("body-parser");
+var Actions = require("../middleware/actions/index");
 var localStore_1 = require("../middleware/localStore");
+var User_1 = require("../middleware/models/User");
 function app(server) {
-    var router = server.loopback.Router();
-    router.get('/webhook', bot.verifyToken);
-    router.get('/authorize', bot.authorize);
-    router.post('/webhook', bot.router);
-    server.use(bodyParser.json({ verify: bot.verifyRequestSignature }));
-    server.use(router);
+    //let router = server.loopback.Router();
+    server.get('/', function (req, res) {
+        res.status(200).send('Speedy Bot!');
+    });
+    server.get('/authorize', bot.authorize);
+    server.get('/webhook', bot.verifyToken);
+    server.post('/webhook', bot.router);
+    //server.use(router);
 }
 exports.app = app;
 ;
-bot.rules.set('hola', sendTest);
+bot.rules.set('hola', sendMenu);
+bot.rules.set('ayuda', sendHelp);
+bot.rules.set('help', sendHelp);
+bot.rules.set('ok', sendYouAreWelcome);
+bot.rules.set('gracias', sendYouAreWelcome);
 bot.payloadRules.set('Search', searchProducts);
 function authentication(recipientId, senderId) {
     return getCustomer(recipientId, senderId).then(function (customer) {
         return getUser(recipientId).then(function (user) {
             if (typeof user == 'undefined') {
-                return User.createUser(store, recipientId, recipientId, customer.fanpageToken).then(function () {
+                return User_1.default.createUser(store, recipientId, recipientId, customer.fanpageToken).then(function () {
                     var userObject = localStore_1.getData(recipientId, 'user');
                     var user = userObject.rawParseObject;
                     return user.createConsumer(store, recipientId, senderId, customer.fanpageToken).then(function (consumer) {
@@ -56,7 +63,7 @@ function getCustomer(recipientId, senderId) {
 function getUser(recipientId) {
     var userObj = localStore_1.getData(recipientId, 'user');
     if (typeof userObj == 'undefined') {
-        return User.loadInStore(store, recipientId).then(function () {
+        return User_1.default.loadInStore(store, recipientId).then(function () {
             return localStore_1.getData(recipientId, 'user');
         });
     }
@@ -120,6 +127,30 @@ function searchProducts(recipientId, senderId, query, index) {
     console.log('searchProducts');
 }
 ;
+function sendHelp(recipientId, senderId) {
+    return bot.sendTypingOn(recipientId, senderId).then(function () {
+        return bot.sendTypingOff(recipientId, senderId).then(function () {
+            bot.clearListener(recipientId);
+            return bot.sendTextMessage(recipientId, senderId, "InOut Bot.\n\nTe permite visualizar las opciones de productos, agregarlos al carrito y realizar tu compra por medio del chat de facebook.\n\nFuncionalidades disponibles: \n\n'Hola', para iniciar la conversación\n'Pedir Domicilio', si quieres realizar un domicilio\n'Carrito', para ver el estado actual de tu carrito").then(function () {
+                sendContactUs(recipientId, senderId);
+            });
+        });
+    });
+}
+function sendContactUs(recipientId, senderId) {
+    return bot.sendTypingOn(recipientId, senderId).then(function () {
+        return bot.sendTypingOff(recipientId, senderId).then(function () {
+            return bot.sendTextMessage(recipientId, senderId, " Para mayor información puedes contactarnos en:\n\n Web: http://www.inoutdelivery.com/\n\n Email: soporte@inoutdelivery.com");
+        });
+    });
+}
+function sendYouAreWelcome(recipientId, senderId) {
+    return bot.sendTypingOn(recipientId, senderId).then(function () {
+        return bot.sendTypingOff(recipientId, senderId).then(function () {
+            return bot.sendTextMessage(recipientId, senderId, "De nada, gracias por usar nuestros servicios");
+        });
+    });
+}
 function sendTest(recipientId, senderId) {
     bot.sendTextMessage(recipientId, senderId, 'test');
 }

@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = function(Business) {
   Business.status = (cb) => {
     let currentDate = new Date();
@@ -25,6 +23,5 @@ module.exports = function(Business) {
         arg: 'status',
         type: 'string'
       }
-    }
-  );
+  });
 };

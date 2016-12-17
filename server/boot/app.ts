@@ -1,21 +1,28 @@
 import * as bot from '../middleware/bot';
-import * as bodyParser from 'body-parser'
-import * as Parse from '../middleware/parse'
-
+import * as types from '../middleware/constants/actionTypes';
+import * as Actions from '../middleware/actions/index';
+import { extractParseAttributes } from '../middleware/parseUtils';
 import { createLocalStore, getData } from '../middleware/localStore';
+import User from '../middleware/models/User'
 
 export function app(server) {
-  let router = server.loopback.Router();
+  //let router = server.loopback.Router();
+  server.get('/', (req, res) =>{
+      res.status(200).send('Speedy Bot!');
+  });
+  server.get('/authorize', bot.authorize);
+  server.get('/webhook', bot.verifyToken);
+  server.post('/webhook', bot.router);
 
-  router.get('/webhook', bot.verifyToken);
-  router.get('/authorize', bot.authorize);
-  router.post('/webhook', bot.router);
-
-  server.use(bodyParser.json({ verify: bot.verifyRequestSignature }));
-  server.use(router);
+  //server.use(router);
 };
 
-bot.rules.set('hola', sendTest);
+bot.rules.set('hola', sendMenu);
+
+bot.rules.set('ayuda', sendHelp);
+bot.rules.set('help', sendHelp);
+bot.rules.set('ok', sendYouAreWelcome);
+bot.rules.set('gracias', sendYouAreWelcome);
 
 bot.payloadRules.set('Search', searchProducts);
 
@@ -131,6 +138,33 @@ function sendMenu(recipientId, senderId) {
 function searchProducts(recipientId, senderId, query, index){
   console.log('searchProducts')
 };
+
+function sendHelp(recipientId, senderId){
+  return bot.sendTypingOn(recipientId, senderId).then(()=>{
+    return bot.sendTypingOff(recipientId, senderId).then(()=>{
+      bot.clearListener(recipientId);
+      return bot.sendTextMessage(recipientId, senderId, "InOut Bot.\n\nTe permite visualizar las opciones de productos, agregarlos al carrito y realizar tu compra por medio del chat de facebook.\n\nFuncionalidades disponibles: \n\n'Hola', para iniciar la conversación\n'Pedir Domicilio', si quieres realizar un domicilio\n'Carrito', para ver el estado actual de tu carrito").then(()=>{
+        sendContactUs(recipientId, senderId);
+      });
+    });
+  });
+}
+
+function sendContactUs(recipientId, senderId){
+  return bot.sendTypingOn(recipientId, senderId).then(()=>{
+    return bot.sendTypingOff(recipientId, senderId).then(()=>{
+      return bot.sendTextMessage(recipientId, senderId, " Para mayor información puedes contactarnos en:\n\n Web: http://www.inoutdelivery.com/\n\n Email: soporte@inoutdelivery.com")
+    });
+  });
+}
+
+function sendYouAreWelcome(recipientId, senderId){
+  return bot.sendTypingOn(recipientId, senderId).then(()=>{
+    return bot.sendTypingOff(recipientId, senderId).then(()=>{
+      return bot.sendTextMessage(recipientId, senderId, "De nada, gracias por usar nuestros servicios")
+    });
+  });
+}
 
 function sendTest(recipientId, senderId) {
   bot.sendTextMessage(recipientId, senderId, 'test');

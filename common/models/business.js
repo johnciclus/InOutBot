@@ -1,4 +1,3 @@
-'use strict';
 module.exports = function (Business) {
     Business.status = function (cb) {
         var currentDate = new Date();
