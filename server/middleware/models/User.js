@@ -4,6 +4,7 @@ var index_1 = require("../actions/index");
 var Consumer_1 = require("./Consumer");
 var request_promise_1 = require("request-promise");
 var config = require("config");
+var objectAssign = require("object-assign");
 var FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 var User = parse_1.default.Object.extend('User', {
     initialize: function (attrs, options) {
@@ -13,7 +14,7 @@ var User = parse_1.default.Object.extend('User', {
     },
     signUpWithFacebookData: function (data) {
         var facebookId = this.get('facebookId');
-        return this.signUp(Object.assign(data, {
+        return this.signUp(objectAssign(data, {
             username: facebookId.toString(),
             password: facebookId.toString()
         })).fail(function (error) {

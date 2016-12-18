@@ -14,7 +14,7 @@ const FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 
 const PAGE_ACCESS_TOKEN = config.get('PAGE_ACCESS_TOKEN');
 
-const limit = 9;
+export const limit = 9;
 
 if (!(APP_SECRET && VALIDATION_TOKEN && SERVER_URL)) {
   console.error("Missing config values");
@@ -136,6 +136,92 @@ export function defaultSearch(recipientId, senderId, query){
     search(recipientId, senderId, query);
   }
 };
+
+/*
+ * Turn typing indicator on
+ *
+ */
+export function sendTypingOn(recipientId, senderId) {
+  //console.log("Turning typing indicator on");
+
+  let messageData = {
+    recipient: {
+      id: recipientId
+    },
+    sender_action: "typing_on"
+  };
+
+  return callSendAPI(messageData, senderId);
+}
+
+/*
+ * Turn typing indicator off
+ *
+ */
+export function sendTypingOff(recipientId, senderId) {
+  //console.log("Turning typing indicator off");
+
+  let messageData = {
+    recipient: {
+      id: recipientId
+    },
+    sender_action: "typing_off"
+  };
+
+  return callSendAPI(messageData, senderId);
+}
+
+/*
+ * Send a text message using the Send API.
+ *
+ */
+export function sendTextMessage(recipientId, senderId,  messageText) {
+  let messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      text: messageText
+      //metadata: "DEVELOPER_DEFINED_METADATA"
+    }
+  };
+
+  return callSendAPI(messageData, senderId);
+}
+
+/*
+ * Send a Structured Message (Generic Message type) using the Send API.
+ *
+ */
+export function sendGenericMessage(recipientId, senderId, elements) {
+  let messageData = {
+    recipient: {
+      id: recipientId
+    },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "generic",
+          elements: elements
+        }
+      }
+    }
+  };
+
+  return callSendAPI(messageData, senderId);
+}
+
+export function clearListener(recipientId){
+  let userListener = listener[recipientId];
+  if(typeof userListener != 'undefined'){
+    listener[recipientId] = {};
+  }
+}
+
+
+
+
 
 /*
  * Authorization Event
@@ -496,62 +582,10 @@ function testAPI(senderId){
 }
 
 /*
- * Turn typing indicator on
- *
- */
-export function sendTypingOn(recipientId, senderId) {
-  //console.log("Turning typing indicator on");
-
-  let messageData = {
-    recipient: {
-      id: recipientId
-    },
-    sender_action: "typing_on"
-  };
-
-  return callSendAPI(messageData, senderId);
-}
-
-/*
- * Turn typing indicator off
- *
- */
-export function sendTypingOff(recipientId, senderId) {
-  //console.log("Turning typing indicator off");
-
-  let messageData = {
-    recipient: {
-      id: recipientId
-    },
-    sender_action: "typing_off"
-  };
-
-  return callSendAPI(messageData, senderId);
-}
-
-/*
- * Send a text message using the Send API.
- *
- */
-export function sendTextMessage(recipientId, senderId,  messageText) {
-  let messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      text: messageText
-      //metadata: "DEVELOPER_DEFINED_METADATA"
-    }
-  };
-
-  return callSendAPI(messageData, senderId);
-}
-
-/*
  * Send an image using the Send API.
  *
  */
-function sendImageMessage(recipientId, senderId, imageUrl) {
+export function sendImageMessage(recipientId, senderId, imageUrl) {
   let messageData = {
     recipient: {
       id: recipientId
@@ -699,33 +733,10 @@ function sendButtonMessage(recipientId, senderId, text, buttons) {
 }
 
 /*
- * Send a Structured Message (Generic Message type) using the Send API.
- *
- */
-function sendGenericMessage(recipientId, senderId, elements) {
-  let messageData = {
-    recipient: {
-      id: recipientId
-    },
-    message: {
-      attachment: {
-        type: "template",
-        payload: {
-          template_type: "generic",
-          elements: elements
-        }
-      }
-    }
-  };
-
-  return callSendAPI(messageData, senderId);
-}
-
-/*
  * Send a receipt message using the Send API.
  *
  */
-function sendReceiptMessage(recipientId, senderId, payload, quick_replies) {
+export function sendReceiptMessage(recipientId, senderId, payload, quick_replies) {
   // Generate a random receipt ID as the API requires a unique ID
   let receiptId = "order" + Math.floor(Math.random()*1000);
 
@@ -795,7 +806,7 @@ function sendReceiptMessage(recipientId, senderId, payload, quick_replies) {
  * Send a message with Quick Reply buttons.
  *
  */
-function sendQuickReplyMessage(recipientId, senderId, text, quick_replies) {
+export function sendQuickReplyMessage(recipientId, senderId, text, quick_replies) {
   let messageData = {
     recipient: {
       id: recipientId
@@ -890,7 +901,7 @@ function findKeyStartsWith(map, str){
   return undefined;
 }
 
-function setListener(recipientId, dataId, type, callback){
+export function setListener(recipientId, dataId, type, callback){
   if(typeof listener[recipientId] == 'undefined'){
     listener[recipientId] = {};
   }
@@ -916,19 +927,14 @@ function deleteListener(recipientId, dataId){
 
 }
 
-function setDataBuffer(recipientId, key, value){
+export function setDataBuffer(recipientId, key, value){
   if(!buffer[recipientId]){
     buffer[recipientId] = {}
   }
   buffer[recipientId][key] = value;
 }
 
-export function clearListener(recipientId){
-  let userListener = listener[recipientId];
-  if(typeof userListener != 'undefined'){
-    listener[recipientId] = {};
-  }
-}
+
 
 
 

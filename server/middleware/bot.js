@@ -9,7 +9,7 @@ var VALIDATION_TOKEN = config.get('VALIDATION_TOKEN');
 var SERVER_URL = config.get('SERVER_URL');
 var FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 var PAGE_ACCESS_TOKEN = config.get('PAGE_ACCESS_TOKEN');
-var limit = 9;
+exports.limit = 9;
 if (!(APP_SECRET && VALIDATION_TOKEN && SERVER_URL)) {
     console.error("Missing config values");
     process.exit(1);
@@ -129,6 +129,81 @@ function defaultSearch(recipientId, senderId, query) {
 }
 exports.defaultSearch = defaultSearch;
 ;
+/*
+ * Turn typing indicator on
+ *
+ */
+function sendTypingOn(recipientId, senderId) {
+    //console.log("Turning typing indicator on");
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        sender_action: "typing_on"
+    };
+    return callSendAPI(messageData, senderId);
+}
+exports.sendTypingOn = sendTypingOn;
+/*
+ * Turn typing indicator off
+ *
+ */
+function sendTypingOff(recipientId, senderId) {
+    //console.log("Turning typing indicator off");
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        sender_action: "typing_off"
+    };
+    return callSendAPI(messageData, senderId);
+}
+exports.sendTypingOff = sendTypingOff;
+/*
+ * Send a text message using the Send API.
+ *
+ */
+function sendTextMessage(recipientId, senderId, messageText) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            text: messageText
+        }
+    };
+    return callSendAPI(messageData, senderId);
+}
+exports.sendTextMessage = sendTextMessage;
+/*
+ * Send a Structured Message (Generic Message type) using the Send API.
+ *
+ */
+function sendGenericMessage(recipientId, senderId, elements) {
+    var messageData = {
+        recipient: {
+            id: recipientId
+        },
+        message: {
+            attachment: {
+                type: "template",
+                payload: {
+                    template_type: "generic",
+                    elements: elements
+                }
+            }
+        }
+    };
+    return callSendAPI(messageData, senderId);
+}
+exports.sendGenericMessage = sendGenericMessage;
+function clearListener(recipientId) {
+    var userListener = exports.listener[recipientId];
+    if (typeof userListener != 'undefined') {
+        exports.listener[recipientId] = {};
+    }
+}
+exports.clearListener = clearListener;
 /*
  * Authorization Event
  *
@@ -444,52 +519,6 @@ function testAPI(senderId) {
     });
 }
 /*
- * Turn typing indicator on
- *
- */
-function sendTypingOn(recipientId, senderId) {
-    //console.log("Turning typing indicator on");
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        sender_action: "typing_on"
-    };
-    return callSendAPI(messageData, senderId);
-}
-exports.sendTypingOn = sendTypingOn;
-/*
- * Turn typing indicator off
- *
- */
-function sendTypingOff(recipientId, senderId) {
-    //console.log("Turning typing indicator off");
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        sender_action: "typing_off"
-    };
-    return callSendAPI(messageData, senderId);
-}
-exports.sendTypingOff = sendTypingOff;
-/*
- * Send a text message using the Send API.
- *
- */
-function sendTextMessage(recipientId, senderId, messageText) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            text: messageText
-        }
-    };
-    return callSendAPI(messageData, senderId);
-}
-exports.sendTextMessage = sendTextMessage;
-/*
  * Send an image using the Send API.
  *
  */
@@ -509,6 +538,7 @@ function sendImageMessage(recipientId, senderId, imageUrl) {
     };
     return callSendAPI(messageData, senderId);
 }
+exports.sendImageMessage = sendImageMessage;
 /*
  * Send a Gif using the Send API.
  *
@@ -628,27 +658,6 @@ function sendButtonMessage(recipientId, senderId, text, buttons) {
     return callSendAPI(messageData, senderId);
 }
 /*
- * Send a Structured Message (Generic Message type) using the Send API.
- *
- */
-function sendGenericMessage(recipientId, senderId, elements) {
-    var messageData = {
-        recipient: {
-            id: recipientId
-        },
-        message: {
-            attachment: {
-                type: "template",
-                payload: {
-                    template_type: "generic",
-                    elements: elements
-                }
-            }
-        }
-    };
-    return callSendAPI(messageData, senderId);
-}
-/*
  * Send a receipt message using the Send API.
  *
  */
@@ -716,6 +725,7 @@ function sendReceiptMessage(recipientId, senderId, payload, quick_replies) {
      * */
     return callSendAPI(messageData, senderId);
 }
+exports.sendReceiptMessage = sendReceiptMessage;
 /*
  * Send a message with Quick Reply buttons.
  *
@@ -754,6 +764,7 @@ function sendQuickReplyMessage(recipientId, senderId, text, quick_replies) {
      * */
     return callSendAPI(messageData, senderId);
 }
+exports.sendQuickReplyMessage = sendQuickReplyMessage;
 /*
  * Send a read receipt to indicate the message has been read
  *
@@ -812,6 +823,7 @@ function setListener(recipientId, dataId, type, callback) {
     }
     exports.listener[recipientId][dataId] = { callback: callback, type: type };
 }
+exports.setListener = setListener;
 function getListener(recipientId, dataId) {
     if (typeof exports.listener[recipientId] == 'undefined') {
         return undefined;
@@ -831,10 +843,4 @@ function setDataBuffer(recipientId, key, value) {
     }
     exports.buffer[recipientId][key] = value;
 }
-function clearListener(recipientId) {
-    var userListener = exports.listener[recipientId];
-    if (typeof userListener != 'undefined') {
-        exports.listener[recipientId] = {};
-    }
-}
-exports.clearListener = clearListener;
+exports.setDataBuffer = setDataBuffer;

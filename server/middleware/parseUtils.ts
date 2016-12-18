@@ -1,4 +1,5 @@
-import objectAssign from 'object-assign'
+import Parse from './parse'
+import * as objectAssign from 'object-assign'
 
 export function extractParseAttributes (object) {
   if (!(object instanceof Parse.Object)) {
@@ -24,7 +25,7 @@ export function extractParseAttributes (object) {
       }
     }
   })
-  result.rawParseObject = object
+  result['rawParseObject'] = object
   return result
 }
 

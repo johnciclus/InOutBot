@@ -3,6 +3,7 @@ import { setUser, loadUser } from '../actions/index';
 import Consumer from './Consumer';
 import rp from 'request-promise';
 import * as config from 'config';
+import * as objectAssign from 'object-assign';
 
 const FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 
@@ -14,7 +15,7 @@ const User = Parse.Object.extend('User', {
   },
   signUpWithFacebookData: function(data){
     let facebookId = this.get('facebookId');
-    return this.signUp(Object.assign(data, {
+    return this.signUp(objectAssign(data, {
       username: facebookId.toString(),
       password: facebookId.toString()
     })).fail(error => {

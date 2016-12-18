@@ -1,8 +1,10 @@
 import { createStore, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 
+let store;
+
 export function createLocalStore(reducer){
-  global.store = createStore(reducer, applyMiddleware(thunk));
+  store = createStore(reducer, applyMiddleware(thunk));
   store.subscribe(() =>
     console.log('\n')
   );
@@ -31,3 +33,5 @@ export function getData(recipientId, property){
   }
   else return undefined;
 }
+
+export default store;

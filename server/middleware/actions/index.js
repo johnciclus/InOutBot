@@ -4,7 +4,7 @@ var types = require("../constants/actionTypes");
 //import Parse from 'parse'
 //import { push } from 'react-router-redux'
 var GetProductsParams_1 = require("../models/GetProductsParams");
-var Customer_1 = require("../models/Customer");
+var ParseModels_1 = require("../models/ParseModels");
 var parseUtils_1 = require("../parseUtils");
 /**
  * Load Consumer of given user
@@ -13,7 +13,7 @@ function loadCustomer(recipientId, businessId) {
     if (businessId == null)
         return;
     return function (dispatch) {
-        return new parse_1.default.Query(Customer_1.default).contains('businessId', businessId).limit(1).first().then(function (customer) {
+        return new parse_1.default.Query(ParseModels_1.Customer).contains('businessId', businessId).limit(1).first().then(function (customer) {
             dispatch({ type: types.CUSTOMER_LOADED, data: { recipientId: recipientId, customer: customer } });
         }).fail(function (e) {
             dispatch({ type: types.CUSTOMER_NOT_FOUND, data: { recipientId: recipientId, businessId: businessId } });
@@ -22,7 +22,7 @@ function loadCustomer(recipientId, businessId) {
 }
 exports.loadCustomer = loadCustomer;
 function getCustomerByFanpage(senderId) {
-    return new parse_1.default.Query(Customer_1.default).equalTo('fanpageId', senderId).first().then(function (customer) {
+    return new parse_1.default.Query(ParseModels_1.Customer).equalTo('fanpageId', senderId).first().then(function (customer) {
         return parseUtils_1.extractParseAttributes(customer);
     }).fail(function (e) {
         console.log('error: ' + e);
@@ -42,12 +42,12 @@ exports.setCustomer = setCustomer;
  */
 function loadUser(recipientId) {
     return function (dispatch) {
-        return new parse_1.default.Query(Consumer).equalTo('recipientId', parseInt(recipientId)).first().then(function (consumer) {
+        return new parse_1.default.Query(ParseModels_1.Consumer).equalTo('recipientId', parseInt(recipientId)).first().then(function (consumer) {
             if (consumer) {
-                return new parse_1.default.Query(User).get(consumer.get('user').id).then(function (user) {
+                return new parse_1.default.Query(ParseModels_1.User).get(consumer.get('user').id).then(function (user) {
                     dispatch({ type: types.USER_LOADED, data: { recipientId: recipientId, user: user } });
                 }).fail(function (e) {
-                    dispatch({ type: types.USER_NOT_FOUND, data: { user: user } });
+                    dispatch({ type: types.USER_NOT_FOUND, data: {} });
                 });
             }
         }).fail(function (e) {
@@ -70,7 +70,7 @@ function loadConsumer(recipientId, user) {
     if (user == null)
         return;
     return function (dispatch) {
-        return new parse_1.default.Query(Consumer).equalTo('user', user).first().then(function (consumer) {
+        return new parse_1.default.Query(ParseModels_1.Consumer).equalTo('user', user).first().then(function (consumer) {
             if (consumer) {
                 dispatch({ type: types.CONSUMER_LOADED, data: { recipientId: recipientId, consumer: consumer } });
             }
@@ -90,7 +90,7 @@ function loadConsumerAddresses(recipientId, consumer) {
     if (consumer == null)
         return;
     return function (dispatch) {
-        return new parse_1.default.Query(ConsumerAddress).equalTo('consumer', consumer).find().then(function (addresses) {
+        return new parse_1.default.Query(ParseModels_1.ConsumerAddress).equalTo('consumer', consumer).find().then(function (addresses) {
             dispatch({ type: types.CONSUMER_ADDRESSES_LOADED, data: { recipientId: recipientId, addresses: addresses } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -127,7 +127,7 @@ exports.loadOrders = loadOrders;
  */
 function setAddress(recipientId, id) {
     return function (dispatch) {
-        return new parse_1.default.Query(ConsumerAddress).get(id).then(function (address) {
+        return new parse_1.default.Query(ParseModels_1.ConsumerAddress).get(id).then(function (address) {
             dispatch({ type: types.SET_CURRENT_ADDRESS, data: { recipientId: recipientId, address: address } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -437,7 +437,7 @@ exports.facebookDataLoaded = facebookDataLoaded;
  */
 function createConsumer(consumerData, mainDispatch) {
     return function (dispatch) {
-        var consumer = new Consumer();
+        var consumer = new ParseModels_1.Consumer();
         consumer.save(consumerData).then(function (consumer) {
             dispatch({ type: types.CONSUMER_CREATED, data: {
                     user: consumerData.user, consumer: consumer
@@ -460,7 +460,7 @@ function updateConsumer(senderId, consumerData) {
     return getCustomerByFanpage(senderId).then(function (customer) {
         return function (dispatch) {
             dispatch({ type: types.UPDATE_CONSUMER, data: consumerData });
-            var consumer = new Consumer();
+            var consumer = new ParseModels_1.Consumer();
             consumer.objectId = consumerData.objectId;
             consumer.save(consumerData).then(function (consumer) {
                 var username = consumer.get('email') + customer.businessId;

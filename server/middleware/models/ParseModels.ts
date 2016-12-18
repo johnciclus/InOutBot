@@ -1,4 +1,17 @@
-import * as User from './User'
-import * as Consumer from './Consumer'
+import User from './User'
+import Customer from './Customer'
+import Consumer from './Consumer'
+import ConsumerAddress from './ConsumerAddress'
+import Category from './Category'
+import Cart from './Cart'
+import Product from './Product'
+import Order from './Order'
+import OrderItem from './OrderItem'
+import OrderState from './OrderState'
+import Modifier from './Modifier'
+import ModifierItem from './ModifierItem'
+import OrderItemModifier from './OrderItemModifier'
+import PaymentMethod from './PaymentMethod'
+import CreditCard from './CreditCard'
 
-export default {User, Consumer};
+export {Customer, User, Consumer, ConsumerAddress, Category, Cart, Product, Order, OrderItem, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, CreditCard}

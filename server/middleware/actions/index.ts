@@ -3,8 +3,7 @@ import * as types from '../constants/actionTypes'
 //import Parse from 'parse'
 //import { push } from 'react-router-redux'
 import GetProductsParams from '../models/GetProductsParams'
-import Customer from '../models/Customer';
-
+import { User, Customer, Consumer, ConsumerAddress } from '../models/ParseModels'
 
 import { extractParseAttributes } from '../parseUtils';
 
@@ -50,7 +49,7 @@ export function loadUser(recipientId) {
         return new Parse.Query(User).get(consumer.get('user').id).then(user => {
           dispatch({type: types.USER_LOADED, data: {recipientId, user}})
         }).fail(e => {
-          dispatch({type: types.USER_NOT_FOUND , data: {user}})
+          dispatch({type: types.USER_NOT_FOUND , data: {}})
         })
       }
     }).fail(e => {
