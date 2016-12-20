@@ -1,3 +1,9 @@
+import Parse from '../middleware/parse'
+import thunk from 'redux-thunk';
+import rp from 'request-promise';
+import * as geocoder from 'geocoder';
+import dateFormat from 'dateformat';
+import DateTime from 'datetime-converter-nodejs';
 import * as Map from 'es6-map';
 import * as config from 'config';
 import * as redux from 'redux';
@@ -6,14 +12,8 @@ import * as objectAssign from 'object-assign';
 import * as bot from '../middleware/bot';
 import * as types from '../middleware/constants/actionTypes';
 import * as Actions from '../middleware/actions/index';
-import Parse from '../middleware/parse'
-import thunk from 'redux-thunk';
-import rp from 'request-promise';
-import geocoder from 'geocoder';
-import dateFormat from 'dateformat';
-import DateTime from 'datetime-converter-nodejs';
 import { extractParseAttributes } from '../middleware/parseUtils';
-import {Customer, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, CreditCard} from '../middleware/models/ParseModels'
+import {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, CreditCard} from '../middleware/models/ParseModels'
 
 const SERVER_URL = config.get('SERVER_URL');
 
@@ -149,7 +149,11 @@ const reducer = (state = initialState, action) => {
   }
 }
 
-let store = undefined;
+const store = redux.createStore(reducer, redux.applyMiddleware(thunk));
+
+store.subscribe(() =>
+  console.log('\n')
+);
 
 bot.rules.set('hola', sendMenu);
 bot.rules.set('iniciar', sendMenu);
@@ -229,10 +233,7 @@ bot.payloadRules.set('SendHelp', sendHelp);
 bot.payloadRules.set('CustomerService', sendHelp);
 
 function createLocalStore(reducer){
-  store = redux.createStore(reducer, redux.applyMiddleware(thunk));
-  store.subscribe(() =>
-    console.log('\n')
-  );
+
 }
 
 function getUserData(recipientId) {
@@ -822,16 +823,13 @@ function setLocationCheck(recipientId, senderId){
 
 function setAddress(recipientId, senderId, id){
   let customer = getData(recipientId, 'customer');
-
   return bot.sendTypingOn(recipientId, senderId).then(()=>{
-    store.dispatch(Actions.setAddress(recipientId, id)).then(() => {
+    ConsumerAddress.setAddress(store, recipientId, id).then(() => {
         let address = getData(recipientId, 'address');
-
         Parse.Cloud.run('getProducts', { businessId: customer.businessId, lat: address.location.lat, lng: address.location.lng}).then(
           function(result){
             let pointSale = result.pointSale;
-
-            store.dispatch(Actions.setCustomerPointSale(recipientId, pointSale.id)).then(() => {
+            CustomerPointSale.setCustomerPointSale(store, recipientId, pointSale.id)).then(() => {
               return bot.sendTypingOff(recipientId, senderId).then(()=>{
                 return bot.sendTextMessage(recipientId, senderId, "Perfecto, ya seleccioné tu dirección para este pedido").then(()=>{
                   sendCategories(recipientId, senderId, 0);
@@ -1539,7 +1537,7 @@ function saveOrder(recipientId, senderId){
     order.save(undefined, {
       success: function(order) {
 
-        store.dispatch(Actions.setOrder(recipientId, order)).then(() => {
+        Order.setOrder(recipientId, order).then(() => {
           clearCart(recipientId);
         });
       },
@@ -1852,6 +1850,8 @@ function checkOrder(recipientId, senderId){
   let pointSale = getData(recipientId, 'pointSale');
   let total = 0;
 
+  console.log('checkOrder')
+
   if(typeof cart != 'undefined'){
     cart.items.forEach(function(value, key){
       total += value.quantity * value.price;
@@ -1886,7 +1886,7 @@ function checkAddress(recipientId, senderId){
 
 function checkPayment(recipientId, senderId){
   return bot.sendTypingOn(recipientId, senderId).then(()=>{
-    store.dispatch(Actions.loadPaymentMethods(recipientId, senderId)).then(() => {
+    PaymentMethod.loadInStore(store, recipientId, senderId).then(() => {
       let paymentMethods = getData(recipientId, 'paymentMethods');
       let quick_replies = [];
 
@@ -1907,7 +1907,8 @@ function checkPayment(recipientId, senderId){
 
 function checkout(recipientId, senderId, id){
   return bot.sendTypingOn(recipientId, senderId).then(()=>{
-    store.dispatch(Actions.setPaymentMethod(recipientId, id)).then(() => {
+
+    PaymentMethod.setPaymentMethod(store, recipientId, id).then(() => {
       let state = store.getState();
       let paymentTypes = state['paymentTypes'];
       let paymentMethod = getData(recipientId, 'paymentMethod');
@@ -2335,7 +2336,7 @@ function sendOrders(recipientId, senderId){
       bot.clearListener(recipientId);
       let consumer = getData(recipientId, 'consumer');
       Parse.Cloud.run('ordersBot', { businessId: customer.businessId, consumerId: consumer.objectId}).then( orders => {
-        store.dispatch(Actions.setOrders(recipientId, orders)).then(() => {
+        Order.setOrders(store, recipientId, orders).then(() => {
           renderOrders(recipientId, senderId);
         });
       }).fail(error => {
@@ -2606,16 +2607,19 @@ function getOrderState(orderStateNumber){
 }
 
 export function app(server) {
+  /*
+  let router = server.loopback.Router();
+  server.use(router);
   server.get('/', (req, res) =>{
     res.status(200).send('Speedy Bot!');
   });
+  */
   server.get('/authorize', bot.authorize);
   server.get('/webhook', bot.verifyToken);
   server.post('/webhook', bot.router);
-  //let router = server.loopback.Router();
-  //server.use(router);
+
 };
 
 createLocalStore(reducer);
 
-export default app;
+module.exports = app;

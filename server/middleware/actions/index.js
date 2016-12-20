@@ -1,8 +1,6 @@
 "use strict";
 var parse_1 = require("../parse");
 var types = require("../constants/actionTypes");
-//import Parse from 'parse'
-//import { push } from 'react-router-redux'
 var GetProductsParams_1 = require("../models/GetProductsParams");
 var ParseModels_1 = require("../models/ParseModels");
 var parseUtils_1 = require("../parseUtils");
@@ -106,7 +104,7 @@ function loadConsumerCreditCards(recipientId, user) {
     if (user == null)
         return;
     return function (dispatch) {
-        return new parse_1.default.Query(CreditCard).equalTo('consumer', user).find().then(function (creditCards) {
+        return new parse_1.default.Query(ParseModels_1.CreditCard).equalTo('consumer', user).find().then(function (creditCards) {
             dispatch({ type: types.CONSUMER_CREDITCARDS_LOADED, data: { recipientId: recipientId, creditCards: creditCards } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -140,7 +138,9 @@ exports.setAddress = setAddress;
  * Load Payment Methods.
  */
 function loadPaymentMethods(recipientId, senderId) {
+    console.log(recipientId);
     return getCustomerByFanpage(senderId).then(function (customer) {
+        console.log(customer);
         return function (dispatch) {
             return new parse_1.default.Cloud.run('paymentMethods', {
                 languageCode: 'es',
@@ -154,7 +154,7 @@ function loadPaymentMethods(recipientId, senderId) {
 exports.loadPaymentMethods = loadPaymentMethods;
 function setPaymentMethod(recipientId, id) {
     return function (dispatch) {
-        return new parse_1.default.Query(PaymentMethodLanguage).get(id).then(function (paymentMethod) {
+        return new parse_1.default.Query(ParseModels_1.PaymentMethodLanguage).get(id).then(function (paymentMethod) {
             dispatch({ type: types.SET_PAYMENT_METHOD, data: { recipientId: recipientId, paymentMethod: paymentMethod } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -225,7 +225,7 @@ function loadUserCreditCards(recipientId, user) {
     if (user == null)
         return;
     return function (dispatch) {
-        return new parse_1.default.Query(CreditCard).equalTo('user', user).find().then(function (creditCards) {
+        return new parse_1.default.Query(ParseModels_1.CreditCard).equalTo('user', user).find().then(function (creditCards) {
             dispatch({ type: types.USER_CREDITCARDS_LOADED, data: { recipientId: recipientId, creditCards: creditCards } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -236,7 +236,7 @@ function loadUserCreditCards(recipientId, user) {
 exports.loadUserCreditCards = loadUserCreditCards;
 function setCustomerPointSale(recipientId, id) {
     return function (dispatch) {
-        return new parse_1.default.Query(CustomerPointSale).get(id).then(function (pointSale) {
+        return new parse_1.default.Query(ParseModels_1.CustomerPointSale).get(id).then(function (pointSale) {
             dispatch({ type: types.SET_CUSTOMER_POINT_SALE, data: { recipientId: recipientId, pointSale: pointSale } });
         }).fail(function (error) {
             console.log('Error ' + error);
@@ -298,7 +298,7 @@ function loadConsumerOrders(recipientId, consumer) {
          console.log(orders);
          })
          */
-        return new parse_1.default.Query(Order).equalTo('consumer', consumer).find().then(function (orders) {
+        return new parse_1.default.Query(ParseModels_1.Order).equalTo('consumer', consumer).find().then(function (orders) {
             console.log(orders);
             dispatch({ type: types.CONSUMER_ORDERS_LOADED, data: { recipientId: recipientId, orders: orders } });
         }).fail(function (error) {
@@ -785,7 +785,7 @@ function createOrder(cart, mainDispatch) {
     }
     var items = [];
     cart.items.forEach(function (item) {
-        var orderItem = new OrderItem();
+        var orderItem = new ParseModels_1.OrderItem();
         orderItem.set('modifiers', []);
         orderItem.set('modifiersGroups', []);
         orderItem.set('product', item.product.rawParseObject);
@@ -793,11 +793,11 @@ function createOrder(cart, mainDispatch) {
         orderItem.set('price', item.price);
         //Set OrderItemModifiers
         item.modifiers.forEach(function (modifierItem) {
-            var m = new Modifier();
+            var m = new ParseModels_1.Modifier();
             m.id = modifierItem.modifier.objectId;
-            var i = new ModifierItem();
+            var i = new ParseModels_1.ModifierItem();
             i.id = modifierItem.modifierItem.objectId;
-            var orderItemModifier = new OrderItemModifier({
+            var orderItemModifier = new ParseModels_1.OrderItemModifier({
                 modifier: m,
                 modifierItem: i,
                 price: modifierItem.price
@@ -813,11 +813,11 @@ function createOrder(cart, mainDispatch) {
                 items: []
             });
             modifierGroupItem.items.forEach(function (modifierItem) {
-                var m = new Modifier();
+                var m = new ParseModels_1.Modifier();
                 m.id = modifierItem.modifier.objectId;
-                var i = new ModifierItem();
+                var i = new ParseModels_1.ModifierItem();
                 i.id = modifierItem.modifierItem.objectId;
-                orderItemModifierGroup.add('items', new OrderItemModifier({
+                orderItemModifierGroup.add('items', new ParseModels_1.OrderItemModifier({
                     modifier: m,
                     modifierItem: i,
                     price: modifierItem.price
@@ -827,7 +827,7 @@ function createOrder(cart, mainDispatch) {
         });
         items.push(orderItem);
     });
-    var newOrder = new Order();
+    var newOrder = new ParseModels_1.Order();
     newOrder.set(cartToOrder(cart, items));
     parse_1.default.Object.saveAll(items).then(function () {
         return newOrder.save();

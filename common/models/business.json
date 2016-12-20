@@ -11,13 +11,13 @@
       "type": "string",
       "required": true
     },
+    "fanpageToken": {
+      "type": "string",
+      "required": true
+    },
     "fanpageId": {
       "type": "number",
       "id": false,
-      "required": true
-    },
-    "fanpageToken": {
-      "type": "string",
       "required": true
     },
     "id": {

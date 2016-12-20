@@ -1,9 +1,7 @@
 import Parse from '../parse'
 import * as types from '../constants/actionTypes'
-//import Parse from 'parse'
-//import { push } from 'react-router-redux'
 import GetProductsParams from '../models/GetProductsParams'
-import { User, Customer, Consumer, ConsumerAddress } from '../models/ParseModels'
+import {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard} from '../models/ParseModels'
 
 import { extractParseAttributes } from '../parseUtils';
 
@@ -145,16 +143,16 @@ export function setAddress(recipientId, id) {
  * Load Payment Methods.
  */
 export function loadPaymentMethods(recipientId, senderId) {
-  return getCustomerByFanpage(senderId).then(customer =>{
-    return dispatch => {
-      return new Parse.Cloud.run('paymentMethods',{
+  return dispatch => {
+    return getCustomerByFanpage(senderId).then(customer => {
+      return new Parse.Cloud.run('paymentMethods', {
         languageCode: 'es',
-        businessId:  customer.businessId
+        businessId: customer.businessId
       }).then((paymentMethods) => {
-        dispatch({ type: types.PAYMENT_METHODS_LOADED, data: {recipientId, paymentMethods}})
+        dispatch({type: types.PAYMENT_METHODS_LOADED, data: {recipientId, paymentMethods}})
       })
-    }
-  });
+    });
+  }
 }
 
 export function setPaymentMethod(recipientId, id){

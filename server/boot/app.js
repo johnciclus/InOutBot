@@ -7,6 +7,12 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
+var parse_1 = require("../middleware/parse");
+var redux_thunk_1 = require("redux-thunk");
+var request_promise_1 = require("request-promise");
+var geocoder = require("geocoder");
+var dateformat_1 = require("dateformat");
+var datetime_converter_nodejs_1 = require("datetime-converter-nodejs");
 var Map = require("es6-map");
 var config = require("config");
 var redux = require("redux");
@@ -15,12 +21,6 @@ var objectAssign = require("object-assign");
 var bot = require("../middleware/bot");
 var types = require("../middleware/constants/actionTypes");
 var Actions = require("../middleware/actions/index");
-var parse_1 = require("../middleware/parse");
-var redux_thunk_1 = require("redux-thunk");
-var request_promise_1 = require("request-promise");
-var geocoder_1 = require("geocoder");
-var dateformat_1 = require("dateformat");
-var datetime_converter_nodejs_1 = require("datetime-converter-nodejs");
 var parseUtils_1 = require("../middleware/parseUtils");
 var ParseModels_1 = require("../middleware/models/ParseModels");
 var SERVER_URL = config.get('SERVER_URL');
@@ -147,7 +147,10 @@ var reducer = function (state, action) {
             return state;
     }
 };
-var store = undefined;
+var store = redux.createStore(reducer, redux.applyMiddleware(redux_thunk_1.default));
+store.subscribe(function () {
+    return console.log('\n');
+});
 bot.rules.set('hola', sendMenu);
 bot.rules.set('iniciar', sendMenu);
 bot.rules.set('empezar', sendMenu);
@@ -218,10 +221,6 @@ bot.payloadRules.set('SendAccount', sendAccount);
 bot.payloadRules.set('SendHelp', sendHelp);
 bot.payloadRules.set('CustomerService', sendHelp);
 function createLocalStore(reducer) {
-    store = redux.createStore(reducer, redux.applyMiddleware(redux_thunk_1.default));
-    store.subscribe(function () {
-        return console.log('\n');
-    });
 }
 function getUserData(recipientId) {
     if (typeof recipientId !== 'undefined' && typeof store !== 'undefined' && typeof store.getState() !== 'undefined') {
@@ -565,7 +564,7 @@ function sendMapConfirmation(recipientId, senderId) {
 }
 function addressCheck(recipientId, senderId) {
     var userBuffer = bot.buffer[recipientId];
-    geocoder_1.default.geocode(userBuffer.address, function (error, data) {
+    geocoder.geocode(userBuffer.address, function (error, data) {
         if (!error && data.status == 'OK') {
             setAddressComponetsInBuffer(recipientId, senderId, data.results[0]);
         }
@@ -735,7 +734,7 @@ function setTelephoneCheck(recipientId, senderId) {
 }
 function setLocationCheck(recipientId, senderId) {
     var userBuffer = bot.buffer[recipientId];
-    geocoder_1.default.reverseGeocode(userBuffer.location.lat, userBuffer.location.lng, function (error, data) {
+    geocoder.reverseGeocode(userBuffer.location.lat, userBuffer.location.lng, function (error, data) {
         if (!error && data.status == 'OK') {
             setAddressComponetsInBuffer(recipientId, senderId, data.results[0]);
         }
@@ -1679,7 +1678,7 @@ function checkAddress(recipientId, senderId) {
 }
 function checkPayment(recipientId, senderId) {
     return bot.sendTypingOn(recipientId, senderId).then(function () {
-        store.dispatch(Actions.loadPaymentMethods(recipientId, senderId)).then(function () {
+        Actions.loadPaymentMethods(recipientId, senderId).then(function () {
             var paymentMethods = getData(recipientId, 'paymentMethods');
             var quick_replies = [];
             for (var i in paymentMethods) {
@@ -2319,17 +2318,18 @@ function getOrderState(orderStateNumber) {
     });
 }
 function app(server) {
-    server.get('/', function (req, res) {
-        res.status(200).send('Speedy Bot!');
+    /*
+    let router = server.loopback.Router();
+    server.use(router);
+    server.get('/', (req, res) =>{
+      res.status(200).send('Speedy Bot!');
     });
+    */
     server.get('/authorize', bot.authorize);
     server.get('/webhook', bot.verifyToken);
     server.post('/webhook', bot.router);
-    //let router = server.loopback.Router();
-    //server.use(router);
 }
 exports.app = app;
 ;
 createLocalStore(reducer);
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = app;
+module.exports = app;

@@ -1,5 +1,5 @@
 import Parse from '../parse'
-import { loadConsumerAddresses } from '../actions/index';
+import { loadConsumerAddresses , setAddress} from '../actions/index';
 import LatLng from './LatLng'
 
 const ConsumerAddress = Parse.Object.extend('ConsumerAddress', {
@@ -27,6 +27,9 @@ const ConsumerAddress = Parse.Object.extend('ConsumerAddress', {
 }, {
   loadInStore: function(store, recipientId, consumer){
     return store.dispatch(loadConsumerAddresses(recipientId, consumer.rawParseObject))
+  },
+  setAddress: function(store, recipientId, id){
+    return store.dispatch(setAddress(recipientId, id))
   }
 });
 
