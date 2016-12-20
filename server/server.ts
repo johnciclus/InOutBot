@@ -30,3 +30,5 @@ boot(app, __dirname, (err) => {
   if (require.main === module)
     app.start();
 });
+
+export default app;

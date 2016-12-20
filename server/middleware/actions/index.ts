@@ -1,10 +1,13 @@
-import Parse from '../parse'
+import Parse from '../parse';
+import * as server from '../../server';
 import * as geocoder from 'geocoder';
 import * as types from '../constants/actionTypes'
 import GetProductsParams from '../models/GetProductsParams'
 import {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, OrderItemModifierGroup, Modifier, ModifierItem, ModifierGroup, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard} from '../models/ParseModels'
 
-import { extractParseAttributes } from '../parseUtils';
+const models = server['models'];
+
+const Business = models.Business;
 
 /**
  * Load Consumer of given user
@@ -20,14 +23,6 @@ export function loadCustomer(recipientId, businessId) {
       dispatch({type: types.CUSTOMER_NOT_FOUND, data: {recipientId, businessId}})
     })
   };
-}
-
-export function getCustomerByFanpage(senderId){
-  return new Parse.Query(Customer).equalTo('fanpageId', senderId).first().then(customer =>{
-    return extractParseAttributes(customer);
-  }).fail(e => {
-    console.log('error: '+e)
-  });
 }
 
 export function setCustomer(recipientId, customer){
@@ -145,10 +140,10 @@ export function setAddress(recipientId, id) {
  */
 export function loadPaymentMethods(recipientId, senderId) {
   return dispatch => {
-    return getCustomerByFanpage(senderId).then(customer => {
+    return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
       return new Parse.Cloud.run('paymentMethods', {
         languageCode: 'es',
-        businessId: customer.businessId
+        businessId: business.id
       }).then((paymentMethods) => {
         dispatch({type: types.PAYMENT_METHODS_LOADED, data: {recipientId, paymentMethods}})
       })
@@ -340,9 +335,9 @@ export function loadConsumerOrders(recipientId, consumer) {
  * Load products from Parse.
  */
 export function loadProducts(senderId, lat, lng, category, pointSale ) {
-  return getCustomerByFanpage(senderId).then(customer => {
+  return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
     return (dispatch, getState) => {
-      let params = new GetProductsParams(customer.businessId)
+      let params = new GetProductsParams(business.id)
       if (lat && lng) {
         params.lat = lat;
         params.lng = lng;
@@ -446,13 +441,13 @@ export function createConsumer(consumerData, mainDispatch) {
  * saved successfully.
  */
 export function updateConsumer(senderId, consumerData) {
-  return getCustomerByFanpage(senderId).then(customer => {
+  return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
     return dispatch => {
       dispatch({type: types.UPDATE_CONSUMER, data: consumerData})
       const consumer = new Consumer()
       consumer.objectId = consumerData.objectId
       consumer.save(consumerData).then(consumer => {
-        let username = consumer.get('email') + customer.businessId;
+        let username = consumer.get('email') + business.id;
         consumer.get('user').save({username}).then(u => {
           dispatch({type: types.CONSUMER_UPDATED, data: {consumer}})
           dispatch({type: types.HIDE_PROFILE})
@@ -508,10 +503,10 @@ export function logout(mainDispatch) {
  * Email Login Action
  */
 export function emailLogin(senderId, userData, mainDispatch) {
-  return getCustomerByFanpage(senderId).then(customer => {
+  return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
     mainDispatch({type: types.EMAIL_LOGIN})
     return dispatch => {
-      Parse.User.logIn(userData.email + customer.businessId, userData.password).then(user => {
+      Parse.User.logIn(userData.email + business.id, userData.password).then(user => {
         dispatch({
           type: types.EMAIL_LOGIN_SUCCESS,
           data: user
@@ -532,10 +527,10 @@ export function emailLogin(senderId, userData, mainDispatch) {
  * Email Login Action
  */
 export function emailRegister(senderId, userData, mainDispatch) {
-  return getCustomerByFanpage(senderId).then(customer => {
+  return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
     mainDispatch({type: types.EMAIL_REGISTER})
     return dispatch => {
-      Parse.User.signUp(userData.email + customer.businessId, userData.password).then(user => {
+      Parse.User.signUp(userData.email + business.id, userData.password).then(user => {
         dispatch({
           type: types.EMAIL_REGISTER_SUCCESS,
           data: {user, userData}
@@ -1025,8 +1020,8 @@ export function hideOutOfCoverageModal() {
  * Load Point of Sales of given businessId.
  */
 export function loadPointSales (senderId) {
-  return getCustomerByFanpage(senderId).then(customer => {
-    const params = {businessId: customer.businessId}
+  return Business.findOne({where: {fanpageId: senderId}}).then((business)=>{
+    const params = {businessId: business.id}
     return dispatch => {
       Parse.Cloud.run('getPointSales', params).then((results) => {
         dispatch({type: types.POINT_OF_SALES_LOADED, data: results})

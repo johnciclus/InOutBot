@@ -4,6 +4,7 @@ import * as Map from 'es6-map';
 import * as config from 'config';
 import * as rp from 'request-promise';
 
+
 const APP_SECRET = config.get('APP_SECRET');
 
 const VALIDATION_TOKEN = config.get('VALIDATION_TOKEN');
@@ -12,9 +13,10 @@ const SERVER_URL = config.get('SERVER_URL');
 
 const FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 
-const PAGE_ACCESS_TOKEN = config.get('PAGE_ACCESS_TOKEN');
-
 export const limit = 9;
+
+let Business = undefined;
+
 
 if (!(APP_SECRET && VALIDATION_TOKEN && SERVER_URL)) {
   console.error("Missing config values");
@@ -71,6 +73,13 @@ export function verifyToken(req, res){
 
 export function router(req, res) {
   let data = req.body;
+  let server = req.app;
+
+  if(typeof Business == 'undefined'){
+    const models = server.models;
+    Business = models.Business;
+  }
+
 
   // Make sure this is a page subscription
   if (data.object == 'page') {
@@ -84,17 +93,17 @@ export function router(req, res) {
       pageEntry.messaging.forEach(function (messagingEvent) {
         //console.log(messagingEvent);
         if (messagingEvent.optin) {
-          receivedAuthentication(messagingEvent);
+          receivedAuthentication(messagingEvent, server);
         } else if (messagingEvent.message) {
-          receivedMessage(messagingEvent);
+          receivedMessage(messagingEvent, server);
         } else if (messagingEvent.delivery) {
-          receivedDeliveryConfirmation(messagingEvent);
+          receivedDeliveryConfirmation(messagingEvent, server);
         } else if (messagingEvent.postback) {
-          receivedPostback(messagingEvent);
+          receivedPostback(messagingEvent, server);
         } else if (messagingEvent.read) {
-          receivedMessageRead(messagingEvent);
+          receivedMessageRead(messagingEvent, server);
         } else if (messagingEvent.account_linking) {
-          receivedAccountLink(messagingEvent);
+          receivedAccountLink(messagingEvent, server);
         } else {
           console.log("Webhook received unknown messagingEvent: ", messagingEvent);
         }
@@ -231,7 +240,7 @@ export function clearListener(recipientId){
  * https://developers.facebook.com/docs/messenger-platform/webhook-reference/authentication
  *
  */
-function receivedAuthentication(event) {
+function receivedAuthentication(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
   let timeOfAuth = event.timestamp;
@@ -269,7 +278,7 @@ function receivedAuthentication(event) {
  * then we'll simply confirm that we've received the attachment.
  *
  */
-function receivedMessage(event) {
+function receivedMessage(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
   let timeOfMessage = event.timestamp;
@@ -401,7 +410,7 @@ function receivedMessage(event) {
  * these fields at https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-delivered
  *
  */
-function receivedDeliveryConfirmation(event) {
+function receivedDeliveryConfirmation(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
   let delivery = event.delivery;
@@ -428,7 +437,7 @@ function receivedDeliveryConfirmation(event) {
  * https://developers.facebook.com/docs/messenger-platform/webhook-reference/postback-received
  *
  */
-function receivedPostback(event) {
+function receivedPostback(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
   let timeOfPostback = event.timestamp;
@@ -506,7 +515,7 @@ function receivedPostback(event) {
  * https://developers.facebook.com/docs/messenger-platform/webhook-reference/message-read
  *
  */
-function receivedMessageRead(event) {
+function receivedMessageRead(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
 
@@ -529,7 +538,7 @@ function receivedMessageRead(event) {
  * https://developers.facebook.com/docs/messenger-platform/webhook-reference/account-linking
  *
  */
-function receivedAccountLink(event) {
+function receivedAccountLink(event, server) {
   let senderID = event.sender.id;
   let recipientID = event.recipient.id;
 
@@ -549,35 +558,40 @@ function receivedAccountLink(event) {
  *
  */
 function callSendAPI(messageData, senderId) {
-    if(typeof PAGE_ACCESS_TOKEN != 'undefined'){
+    return Business.findOne({where: {fanpageId: senderId}}).then((business)=> {
+      if (typeof business != 'undefined') {
+        return rp({
+          uri: FACEBOOK_GRAPH + 'me/messages',
+          qs: {access_token: business.fanpageToken},
+          method: 'POST',
+          json: messageData
+        }).catch(error => {
+          console.log('error');
+          console.log(error);
+        });
+      }
+      else {
+        console.log('Error: senderId not found: ' + senderId)
+        console.log(messageData);
+      }
+    })
+}
+
+function testAPI(senderId){
+    return Business.findOne({where: {fanpageId: senderId}}).then((business)=> {
+
       return rp({
-        uri: FACEBOOK_GRAPH + 'me/messages',
-        qs: {access_token: PAGE_ACCESS_TOKEN},
-        method: 'POST',
-        json: messageData
+        uri: FACEBOOK_GRAPH + 'me?fields=name,email,age_range,birthday,is_verified,location',
+        qs: {access_token: business.fanpageToken},
+        method: 'GET'
+      }).then(response => {
+        console.log('Successful login for: ' + response.name);
+        console.log('Thanks for logging in, ' + response.email + '!');
+        console.log(response);
       }).catch(error => {
         console.log('error');
         console.log(error);
       });
-    }
-    else {
-      console.log('Error: senderId not found: ' + senderId)
-      console.log(messageData);
-    }
-}
-
-function testAPI(senderId){
-    return rp({
-      uri: FACEBOOK_GRAPH + 'me?fields=name,email,age_range,birthday,is_verified,location',
-      qs: {access_token: PAGE_ACCESS_TOKEN},
-      method: 'GET'
-    }).then(response => {
-      console.log('Successful login for: ' + response.name);
-      console.log('Thanks for logging in, ' + response.email + '!');
-      console.log(response);
-    }).catch(error => {
-      console.log('error');
-      console.log(error);
     });
 }
 

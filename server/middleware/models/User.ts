@@ -1,7 +1,7 @@
 import Parse from '../parse'
 import { setUser, loadUser } from '../actions/index';
 import Consumer from './Consumer';
-import rp from 'request-promise';
+import * as rp from 'request-promise';
 import * as config from 'config';
 import * as objectAssign from 'object-assign';
 
@@ -46,6 +46,7 @@ const User = Parse.Object.extend('User', {
     });
   },
   getFacebookUserData: function(facebookId, conversationToken){
+    console.log('getFacebookUserData')
     return rp({
       uri: FACEBOOK_GRAPH + facebookId,
       qs: {access_token: conversationToken, fields: 'first_name,last_name,locale,timezone,gender'},
@@ -58,9 +59,13 @@ const User = Parse.Object.extend('User', {
     });
   },
   createUser: function(store, recipientId, facebookId, conversationToken){
+    console.log('createUser');
     let user = new User({facebookId: parseInt(facebookId)});
+    console.log(user);
+
     return User.getFacebookUserData(facebookId, conversationToken).then(data => {
       delete data.id;
+      console.log(data);
       return user.signUpWithFacebookData(data).then(() => {
         return user.saveInStore(store, recipientId)
       });
