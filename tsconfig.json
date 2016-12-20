@@ -10,8 +10,9 @@
   },
   "compileOnSave": true,
   "include": [
-    "server/**/*",
-    "client"
+    "common/**/*",
+    "client/**/*",
+    "server/**/*"
   ],
   "exclude": [
     "node_modules",

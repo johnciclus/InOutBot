@@ -12,9 +12,10 @@ import OrderItemModifierGroup from './OrderItemModifierGroup'
 import OrderState from './OrderState'
 import Modifier from './Modifier'
 import ModifierItem from './ModifierItem'
+import ModifierGroup from './ModifierGroup'
 import OrderItemModifier from './OrderItemModifier'
 import PaymentMethod from './PaymentMethod'
 import PaymentMethodLanguage from './PaymentMethodLanguage'
 import CreditCard from './CreditCard'
 
-export {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Cart, Product, Order, OrderItem, OrderItemModifierGroup, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard}
+export {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Cart, Product, Order, OrderItem, OrderItemModifierGroup, OrderState, Modifier, ModifierGroup, ModifierItem, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard}

@@ -1,13 +1,13 @@
 import Parse from '../middleware/parse'
 import thunk from 'redux-thunk';
 import rp from 'request-promise';
-import * as geocoder from 'geocoder';
-import dateFormat from 'dateformat';
+import * as easydate from 'easydate';
 import DateTime from 'datetime-converter-nodejs';
 import * as Map from 'es6-map';
 import * as config from 'config';
 import * as redux from 'redux';
 import * as Promise from 'promise';
+import * as geocoder from 'geocoder';
 import * as objectAssign from 'object-assign';
 import * as bot from '../middleware/bot';
 import * as types from '../middleware/constants/actionTypes';
@@ -231,10 +231,6 @@ bot.payloadRules.set('SetScore', setScore);
 bot.payloadRules.set('SendAccount', sendAccount);
 bot.payloadRules.set('SendHelp', sendHelp);
 bot.payloadRules.set('CustomerService', sendHelp);
-
-function createLocalStore(reducer){
-
-}
 
 function getUserData(recipientId) {
   if (typeof recipientId !== 'undefined' && typeof store !== 'undefined' && typeof store.getState() !== 'undefined') {
@@ -824,12 +820,12 @@ function setLocationCheck(recipientId, senderId){
 function setAddress(recipientId, senderId, id){
   let customer = getData(recipientId, 'customer');
   return bot.sendTypingOn(recipientId, senderId).then(()=>{
-    ConsumerAddress.setAddress(store, recipientId, id).then(() => {
+    return ConsumerAddress.setAddress(store, recipientId, id).then(() => {
         let address = getData(recipientId, 'address');
         Parse.Cloud.run('getProducts', { businessId: customer.businessId, lat: address.location.lat, lng: address.location.lng}).then(
           function(result){
             let pointSale = result.pointSale;
-            CustomerPointSale.setCustomerPointSale(store, recipientId, pointSale.id)).then(() => {
+            CustomerPointSale.setCustomerPointSale(store, recipientId, pointSale.id).then(() => {
               return bot.sendTypingOff(recipientId, senderId).then(()=>{
                 return bot.sendTextMessage(recipientId, senderId, "Perfecto, ya seleccioné tu dirección para este pedido").then(()=>{
                   sendCategories(recipientId, senderId, 0);
@@ -850,9 +846,8 @@ function setAddress(recipientId, senderId, id){
               console.log(error);
             }
           });
-      }
-    );
-  });
+      });
+  })
 }
 
 function editAddress(recipientId, senderId, id){
@@ -1695,7 +1690,7 @@ function sendCartReceipt(recipientId, senderId, cartId, elements, total){
           order_number: cartId,
           currency: "COP",
           payment_method: payment_method.name,
-          timestamp: Math.trunc(Date.now()/1000).toString(),
+          timestamp: Math.round(Date.now()/1000).toString(),
           elements: elements,
           address: addressData,
           summary: {
@@ -2370,7 +2365,9 @@ function renderOrders(recipientId, senderId){
     if (elements.length < bot.limit){
       let datetime = DateTime.dateString(order.createdAt);
       let image_url = customer.image.url;
-      let title = (order.orderNumber)? 'Orden: '+order.orderNumber :  'Orden: '+dateFormat(datetime, "h:MM:ss TT dd/mm/yyyy")
+      let title = (order.orderNumber)? 'Orden: '+order.orderNumber :  'Orden: '+easydate("h:M:s d/m/y");
+
+      //dateFormat(datetime, "h:MM:ss TT dd/mm/yyyy")
 
       elements.push({
         "title": title,
@@ -2468,7 +2465,7 @@ function renderOrder(recipientId, senderId, order, elements){
         order_number: order.objectId,
         currency: "COP",
         payment_method: payment_method.name,
-        timestamp: Math.trunc(Date.now()/1000).toString(),
+        timestamp: Math.round(Date.now()/1000).toString(),
         elements: elements,
         address: addressData,
         summary: {
@@ -2606,7 +2603,7 @@ function getOrderState(orderStateNumber){
     });
 }
 
-export function app(server) {
+export function app(server){
   /*
   let router = server.loopback.Router();
   server.use(router);
@@ -2619,7 +2616,5 @@ export function app(server) {
   server.post('/webhook', bot.router);
 
 };
-
-createLocalStore(reducer);
 
 module.exports = app;

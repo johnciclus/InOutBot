@@ -494,7 +494,7 @@ function callSendAPI(messageData, senderId) {
             qs: { access_token: PAGE_ACCESS_TOKEN },
             method: 'POST',
             json: messageData
-        }).catch(function (error) {
+        })["catch"](function (error) {
             console.log('error');
             console.log(error);
         });
@@ -513,7 +513,7 @@ function testAPI(senderId) {
         console.log('Successful login for: ' + response.name);
         console.log('Thanks for logging in, ' + response.email + '!');
         console.log(response);
-    }).catch(function (error) {
+    })["catch"](function (error) {
         console.log('error');
         console.log(error);
     });

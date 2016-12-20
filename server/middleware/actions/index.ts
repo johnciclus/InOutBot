@@ -1,7 +1,8 @@
 import Parse from '../parse'
+import * as geocoder from 'geocoder';
 import * as types from '../constants/actionTypes'
 import GetProductsParams from '../models/GetProductsParams'
-import {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, Modifier, ModifierItem, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard} from '../models/ParseModels'
+import {Customer, CustomerPointSale, User, Consumer, ConsumerAddress, Category, Product, Cart, Order, OrderItem, OrderState, OrderItemModifierGroup, Modifier, ModifierItem, ModifierGroup, OrderItemModifier, PaymentMethod, PaymentMethodLanguage, CreditCard} from '../models/ParseModels'
 
 import { extractParseAttributes } from '../parseUtils';
 
@@ -164,14 +165,6 @@ export function setPaymentMethod(recipientId, id){
       console.log('Error '+error);
       //TODO dispatch action with error
     });
-  }
-}
-
-export function getConsumerAndAddresses(user){
-  return (dispatch, getState) => {
-    return dispatch(recipientId, loadConsumer(user)).then(() => {
-      return dispatch(loadConsumerAddresses(getState().consumer.rawParseObject))
-    })
   }
 }
 
@@ -374,7 +367,7 @@ export function loadProducts(senderId, lat, lng, category, pointSale ) {
         try {
           if (e.message.code === 1001) {
             dispatch({type: types.OUT_OF_COVERAGE, data: {lat, lng}})
-            dispatch(loadPointSales())
+            dispatch(loadPointSales(senderId))
           }
         } catch (e) {
         }
@@ -418,22 +411,6 @@ export function emptyCart() {
 }
 
 /**
- * Load User's Facebook data.
- */
-function loadFacebookUserData(accessToken, dispatch) {
-  FB.api('/me', {
-    fields: 'email, first_name, last_name',
-    access_token: accessToken
-  }, function (res) {
-    if (!res.error) {
-      dispatch(facebookDataLoaded(res))
-    } else {
-      //TODO dispatch error event
-    }
-  })
-}
-
-/**
  * Facebook Data Loaded
  */
 export function facebookDataLoaded(data) {
@@ -455,7 +432,7 @@ export function createConsumer(consumerData, mainDispatch) {
         user: consumerData.user, consumer
       }})
       dispatch({type: types.CONSUMER_LOADED, data: {consumer}})
-      mainDispatch(push('/'))
+      //mainDispatch(push('/'))
     }).fail(e => {
       dispatch({type: types.CONSUMER_NOT_FOUND, data: {user: consumerData.user}})
     })
@@ -501,7 +478,7 @@ export function facebookLogin (mainDispatch) {
         } else {
           dispatch({type: types.FACEBOOK_LOGIN_SUCCESS, data: user})
         }
-        mainDispatch(push('/'))
+        //mainDispatch(push('/'))
         dispatch(loadConsumer(user, mainDispatch))
       },
       error: function(user, error) {
@@ -521,8 +498,8 @@ export function logout(mainDispatch) {
       Parse.User.logOut()
     }
 
-    mainDispatch(push('/'))
-    window.location = "/"
+    //mainDispatch(push('/'))
+    //window.location = "/"
     dispatch({type: types.LOGOUT})
   }
 }
@@ -539,7 +516,7 @@ export function emailLogin(senderId, userData, mainDispatch) {
           type: types.EMAIL_LOGIN_SUCCESS,
           data: user
         })
-        mainDispatch(push('/'))
+        //mainDispatch(push('/'))
         dispatch(loadConsumer(user, mainDispatch))
       }).fail(e => {
         dispatch({
@@ -613,21 +590,21 @@ function geocodeLocation(location, mainDispatch, fromGeoLocation) {
       let isBetweenAddress = -1
       isBetweenAddress = place.formatted_address.indexOf(" a ")
       if (isBetweenAddress === -1) {
-        address.address = place.formatted_address
+        address['address'] = place.formatted_address
       } else {
         let street = place.formatted_address.substr(0, isBetweenAddress)
         let city = ""
         place.address_components.forEach(component => {
           if (component.types.indexOf("locality") !== -1) city = component.short_name
         })
-        address.address = street + ", " + city
+        address['address'] = street + ", " + city
       }
 
-      address.location = {
+      address['location'] = {
         lat: place.geometry.location.lat(),
         lng: place.geometry.location.lng()
       }
-      address.fromGeoLocation = fromGeoLocation
+      address['fromGeoLocation'] = fromGeoLocation
       mainDispatch(mapAddressChanged(address))
     }
   })
@@ -642,7 +619,7 @@ export function mapBoundsChanged(mapBounds, mainDispatch) {
     data: mapBounds.bounds
   })
   return dispatch => {
-    geocodeLocation(mapBounds.center, mainDispatch)
+    //geocodeLocation(mapBounds.center, mainDispatch)
   }
 }
 
@@ -769,7 +746,7 @@ function cartToOrder(cart, items) {
  * Create Order Action
  */
 export function createOrder(cart, mainDispatch) {
-  mainDispatch(push('/'))
+  //mainDispatch(push('/'))
   mainDispatch({type: types.CREATE_ORDER})
   const consumer = cart.consumerAddress.consumer
 
@@ -777,7 +754,7 @@ export function createOrder(cart, mainDispatch) {
   if (!consumer.objectId) {
     mainDispatch({type: types.HIDE_CART})
     mainDispatch({type: types.CREATE_ORDER_ERROR})
-    return mainDispatch(push('/login'))
+    //return mainDispatch(push('/login'))
   }
 
   //Check that cart has at least 1 item.
@@ -868,7 +845,7 @@ export function createOrder(cart, mainDispatch) {
   }).then(order => {
     mainDispatch({type: types.ORDER_CREATED, data: order})
     mainDispatch(emptyCart())
-    mainDispatch(loadConsumerOrders())
+    //mainDispatch(loadConsumerOrders())
     mainDispatch(toggleCart(false))
   }).fail(e => {
     alert('Hubo un error al crear su pedido, por favor intenta nuevamente.')
@@ -1025,7 +1002,7 @@ export function rateOrder(orderId, score, comment) {
     dispatch({type: types.RATING_ORDER})
     Parse.Cloud.run('rateOrder', {orderId, score, comment}).then(function () {
       dispatch({type: types.RATE_ORDER_SUCCESS})
-      return dispatch(loadConsumerOrders())
+      //return dispatch(loadConsumerOrders())
     }).fail(function (e) {
       return {type: types.RATE_ORDER_ERROR, data: e}
     })

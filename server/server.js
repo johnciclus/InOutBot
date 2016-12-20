@@ -1,10 +1,12 @@
 "use strict";
 var loopback = require("loopback");
-var bodyParser = require("body-parser");
 var boot = require("loopback-boot");
+var path = require("path");
+var bodyParser = require("body-parser");
 var bot_1 = require("./middleware/bot");
 var app = module.exports = loopback();
 app.use(bodyParser.json({ verify: bot_1.verifyRequestSignature }));
+app.use(loopback.static(path.resolve(__dirname, '../client')));
 app.start = function () {
     return app.listen(function () {
         app.emit('started');

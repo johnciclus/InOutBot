@@ -1,11 +1,13 @@
 import * as loopback from 'loopback';
-import * as bodyParser from 'body-parser'
 import * as boot from 'loopback-boot';
+import * as path from 'path'
+import * as bodyParser from 'body-parser'
 import {verifyRequestSignature} from './middleware/bot';
 
 let app = module.exports = loopback();
 
 app.use(bodyParser.json({ verify: verifyRequestSignature }));
+app.use(loopback.static(path.resolve(__dirname, '../client')));
 
 app.start = () => {
   return app.listen(() => {

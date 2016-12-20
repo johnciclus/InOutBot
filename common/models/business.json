@@ -11,6 +11,16 @@
       "type": "string",
       "required": true
     },
+    "id": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "index": true
+    },
+    "botDescription": {
+      "type": "string",
+      "required": true
+    },
     "fanpageToken": {
       "type": "string",
       "required": true
@@ -19,12 +29,6 @@
       "type": "number",
       "id": false,
       "required": true
-    },
-    "id": {
-      "type": "string",
-      "id": true,
-      "required": true,
-      "index": true
     }
   },
   "validations": [],
