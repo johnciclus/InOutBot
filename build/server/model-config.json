@@ -14,7 +14,7 @@
     ]
   },
   "User": {
-    "dataSource": "MongoDB"
+    "dataSource": "db"
   },
   "AccessToken": {
     "dataSource": "db",
@@ -33,7 +33,7 @@
     "public": false
   },
   "Business": {
-    "dataSource": "MongoDB",
+    "dataSource": "db",
     "public": true,
     "$promise": {},
     "$resolved": true
