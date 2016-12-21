@@ -1,0 +1,38 @@
+{
+  "name": "Business",
+  "plural": "Businesses",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "id": {
+      "type": "string",
+      "id": true,
+      "required": true,
+      "index": true
+    },
+    "botDescription": {
+      "type": "string",
+      "required": true
+    },
+    "fanpageToken": {
+      "type": "string",
+      "required": true
+    },
+    "fanpageId": {
+      "type": "number",
+      "id": false,
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}

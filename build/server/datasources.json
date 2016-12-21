@@ -1,0 +1,13 @@
+{
+  "db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "MongoDB": {
+    "host": "localhost",
+    "port": 27017,
+    "database": "InOutBot",
+    "name": "MongoDB",
+    "connector": "mongodb"
+  }
+}
