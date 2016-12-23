@@ -10,6 +10,7 @@ var SERVER_URL = config.get('SERVER_URL');
 var FACEBOOK_GRAPH = config.get('FACEBOOK_GRAPH');
 exports.limit = 9;
 var Business = undefined;
+console.log(VALIDATION_TOKEN);
 if (!(APP_SECRET && VALIDATION_TOKEN && SERVER_URL)) {
     console.error("Missing config values");
     process.exit(1);

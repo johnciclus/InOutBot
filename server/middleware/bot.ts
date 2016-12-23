@@ -17,6 +17,7 @@ export const limit = 9;
 
 let Business = undefined;
 
+console.log(VALIDATION_TOKEN);
 
 if (!(APP_SECRET && VALIDATION_TOKEN && SERVER_URL)) {
   console.error("Missing config values");
