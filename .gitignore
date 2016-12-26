@@ -17,6 +17,10 @@
 coverage
 node_modules
 config/
+build/
+
+config/default.json
+config/production.json
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
